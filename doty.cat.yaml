@@ -1,0 +1,172 @@
+port: 7890
+socks-port: 7891
+redir-port: 7892
+mixed-port: 7893
+tproxy-port: 7895
+ipv6: false
+mode: rule
+log-level: silent
+allow-lan: true
+external-controller: 0.0.0.0:9090
+secret: "123456"
+bind-address: "*"
+unified-delay: true
+
+profile:
+  store-selected: true
+
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  listen: 0.0.0.0:7874
+  nameserver:
+    - 8.8.8.8
+    - 1.1.1.1
+    - https://dns.google/dns-query
+    - https://cloudflare-dns.com/dns-query
+  fallback:
+    - 8.8.4.4
+    - 1.0.0.1
+    - 112.215.203.254
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "+.*"
+
+proxies:
+  - name: VMESS-SG
+    server: DOTY.CAT
+    port: 80
+    type: vmess
+    uuid: DOTY.CAT
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername: DOTY.CAT
+    network: ws
+    ws-opts:
+      path: "/vmess"
+      headers:
+        Host: DOTY.CAT
+    udp: true
+
+  - name: VLESS-MY
+    server: DOTY.CAT
+    port: 80
+    type: vless
+    uuid: DOTY.CAT
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername: DOTY.CAT
+    network: ws
+    ws-opts:
+      path: "/vlessws"
+      headers:
+        Host: DOTY.CAT
+    udp: true
+
+  - name: VLESS-SG01
+    server: DOTY.CAT
+    port: 80
+    type: vless
+    uuid: DOTY.CAT
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername: DOTY.CAT
+    network: ws
+    ws-opts:
+      path: "/vlessws"
+      headers:
+        Host: DOTY.CAT
+    udp: true
+
+proxy-groups:
+- name: Fastest-Proxy
+  type: url-test
+  proxies:
+  - VMESS-SG
+  - VLESS-MY
+  - VLESS-SG01
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+- name: Load-Balance-Group
+  type: load-balance
+  strategy: round-robin
+  proxies:
+  - VMESS-SG
+  - VLESS-MY
+  - VLESS-SG01
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+rules:
+  - DST-PORT,7895,REJECT
+  - DST-PORT,7892,REJECT
+  - IP-CIDR,198.18.0.1/16,REJECT,no-resolve
+  - MATCH,Fastest-Proxy 
+
+external-ui: "/usr/share/openclash/ui"
+
+experimental:
+  sniff-tls-sni: true
+
+authentication:
+  - Clash:ChBUF7gg
+
+keep-alive-interval: 1800
+global-client-fingerprint: none
+
+tun:
+  enable: true
+  stack: system
+  device: utun
+  auto-route: false
+  auto-detect-interface: false
+  dns-hijack:
+    - tcp://any:53
+
+rule-providers:
+  myTV SUPER:
+    type: http
+    behavior: classical
+    path: "/etc/openclash/rule_provider/myTV SUPER.yaml"
+    url: https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Provider/Media/myTV%20SUPER.yaml
+    interval: 86400
+
+  YouTube(By lhie1):
+    type: http
+    behavior: classical
+    path: "/etc/openclash/rule_provider/YouTube-lhie1.yaml"
+    url: https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Provider/Media/YouTube.yaml
+    interval: 86400
+
+  Speedtest:
+    type: http
+    behavior: classical
+    path: "/etc/openclash/rule_provider/Speedtest.yaml"
+    url: https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Provider/Speedtest.yaml
+    interval: 86400
+
+  ViuTV(By lhie1):
+    type: http
+    behavior: classical
+    path: "/etc/openclash/rule_provider/ViuTV-lhie1.yaml"
+    url: https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Provider/Media/ViuTV.yaml
+    interval: 86400
+
+  Netease Music:
+    type: http
+    behavior: classical
+    path: "/etc/openclash/rule_provider/Netease Music.yaml"
+    url: https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Provider/Media/Netease%20Music.yaml
+    interval: 86400
+
+  Netflix(By lhie1):
+    type: http
+    behavior: classical
+    path: "/etc/openclash/rule_provider/Netflix-lhie1.yaml"
+    url: https://raw.githubusercontent.com/dler-io/Rules/master/Clash/Provider/Media/Netflix.yaml
+    interval: 86400
